@@ -21,10 +21,11 @@ The first time you stumble across a Dwarven Sword Schematic tucked in a chest yo
 
 ## Installation
 
-Drop the `Data/Scripts/` folder into your Skyrim `Data/` directory, then add `patcher/Hephaestus_reimagined.exe` to Synthesis as a Local External Program and run it. After it finishes:
+1. Drop the `Data/Scripts/` folder from the download into your Skyrim `Data/` directory
+2. Open Synthesis and import the included `.synth` file — it'll pull the patcher straight from GitHub
+3. Run Synthesis as normal
 
-1. Open the generated patch in SSEEdit
-2. Find `HEP_MasteryQuest` and check the **Start Game Enabled** flag so the quest kicks off automatically
+After it finishes, open the generated patch in SSEEdit, find `HEP_MasteryQuest`, and check the **Start Game Enabled** flag so the quest kicks off automatically.
 
 That's it. No fussing around.
 
