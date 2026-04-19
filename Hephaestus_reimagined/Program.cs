@@ -38,6 +38,7 @@ namespace Hephaestus_reimagined
                 )
                     continue;
                 var key = cobj.CreatedObject.FormKey;
+                if (key.IsNull) continue;
                 if (!temperCOBJsCache.TryGetValue(key, out var list))
                 {
                     list = new List<IConstructibleObjectGetter>();
