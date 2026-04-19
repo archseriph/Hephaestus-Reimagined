@@ -348,3 +348,10 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 Hephaestus/equipmentLayout.txt
+
+# Zip releases
+*.zip
+
+# Claude Code
+.claude/
+
