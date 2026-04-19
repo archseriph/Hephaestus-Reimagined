@@ -2,7 +2,7 @@
   "Nickname": "Hephaestus Reimagined - Crafting Overhaul",
   "Visibility": "Visible",
   "OneLineDescription": "So you want to actually *earn* the right to forge Daedric armor, huh? Good. You should.",
-  "LongDescription": "Hephaestus Reimagined is a Synthesis patcher that strips away your innate knowledge of every crafting recipe in the game and hands it back to you piece by piece — through schematics, loot, merchants, and the deeply satisfying act of dismantling things to figure out how they were made.\r\n\r\n## What it does\r\n\r\n- Removes default crafting and tempering knowledge from items\r\n- Adds schematics and recipe notes to leveled lists so you can actually find them in the world\r\n- Supports crafting, tempering, and food recipes\r\n- Works across SkyrimLE, SkyrimSE, SkyrimVR, Enderal, and the GOG edition",
+  "LongDescription": "You start with no knowledge of how to craft anything. Schematics are scattered through loot, merchants, and item breakdowns — study them to unlock recipes, visit workbenches to master tempering. Works universally across any load order.",
   "PreferredAutoVersioning": "LatestTag",
   "RequiredMods": [
     "Skyrim.esm"
