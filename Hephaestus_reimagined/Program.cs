@@ -193,45 +193,11 @@ namespace Hephaestus_reimagined
                         $"  Tier threshold: {threshold}{(isUnique ? " (unique ×2)" : string.Empty)}"
                     );
 
-                // Create mastery perk (not in any perk tree — used as a condition flag only)
-                var masteryPerk = state.PatchMod.Perks.AddNew();
-                masteryPerk.EditorID = $"HEP_Mastered_{objEditorID}";
-                masteryPerk.Name = $"Mastered: {objName}";
+                // Craftable items: schematic unlock gates both crafting and tempering.
+                // Uncraftable items (uniques/artifacts): bench-visit mastery gates tempering.
+                Perk temperingGatePerk;
 
-                // Create progress global (starts at 0.0)
-                var progressGlobal = new GlobalFloat(
-                    state.PatchMod.GetNextFormKey(),
-                    SkyrimRelease.SkyrimSE
-                );
-                progressGlobal.EditorID = $"HEP_Progress_{objEditorID}";
-                progressGlobal.Data = 0.0f;
-                state.PatchMod.Globals.Add(progressGlobal);
-
-                // Create threshold global (stores the visit count required)
-                var thresholdGlobal = new GlobalFloat(
-                    state.PatchMod.GetNextFormKey(),
-                    SkyrimRelease.SkyrimSE
-                );
-                thresholdGlobal.EditorID = $"HEP_Threshold_{objEditorID}";
-                thresholdGlobal.Data = threshold;
-                state.PatchMod.Globals.Add(thresholdGlobal);
-
-                // Add to FormLists (parallel by index)
-                trackedItemsList.Items.Add(
-                    new FormLink<ISkyrimMajorRecordGetter>(createdItemFormKey)
-                );
-                masteryPerksList.Items.Add(
-                    new FormLink<ISkyrimMajorRecordGetter>(masteryPerk.FormKey)
-                );
-                progressGlobalsList.Items.Add(
-                    new FormLink<ISkyrimMajorRecordGetter>(progressGlobal.FormKey)
-                );
-                thresholdGlobalsList.Items.Add(
-                    new FormLink<ISkyrimMajorRecordGetter>(thresholdGlobal.FormKey)
-                );
-
-                // Crafting gate: non-unique items with crafting recipes get a schematic unlock system
-                if (!isUnique && cobjFormKeys.Count > 0)
+                if (cobjFormKeys.Count > 0)
                 {
                     int complexity = GenData.GetSchematicComplexity(createdItem, createdItemKeywords, objType);
 
@@ -356,9 +322,49 @@ namespace Hephaestus_reimagined
                                 modifiedLvli.Entries!.Add(e);
                         }
                     }
+
+                    temperingGatePerk = craftingPerk;
+                }
+                else
+                {
+                    // Uncraftable item: bench-visit mastery system gates tempering
+                    var masteryPerk = state.PatchMod.Perks.AddNew();
+                    masteryPerk.EditorID = $"HEP_Mastered_{objEditorID}";
+                    masteryPerk.Name = $"Mastered: {objName}";
+
+                    var progressGlobal = new GlobalFloat(
+                        state.PatchMod.GetNextFormKey(),
+                        SkyrimRelease.SkyrimSE
+                    );
+                    progressGlobal.EditorID = $"HEP_Progress_{objEditorID}";
+                    progressGlobal.Data = 0.0f;
+                    state.PatchMod.Globals.Add(progressGlobal);
+
+                    var thresholdGlobal = new GlobalFloat(
+                        state.PatchMod.GetNextFormKey(),
+                        SkyrimRelease.SkyrimSE
+                    );
+                    thresholdGlobal.EditorID = $"HEP_Threshold_{objEditorID}";
+                    thresholdGlobal.Data = threshold;
+                    state.PatchMod.Globals.Add(thresholdGlobal);
+
+                    trackedItemsList.Items.Add(
+                        new FormLink<ISkyrimMajorRecordGetter>(createdItemFormKey)
+                    );
+                    masteryPerksList.Items.Add(
+                        new FormLink<ISkyrimMajorRecordGetter>(masteryPerk.FormKey)
+                    );
+                    progressGlobalsList.Items.Add(
+                        new FormLink<ISkyrimMajorRecordGetter>(progressGlobal.FormKey)
+                    );
+                    thresholdGlobalsList.Items.Add(
+                        new FormLink<ISkyrimMajorRecordGetter>(thresholdGlobal.FormKey)
+                    );
+
+                    temperingGatePerk = masteryPerk;
                 }
 
-                // Patch tempering COBJs to require the mastery perk
+                // Patch tempering COBJs to require the tempering gate perk
                 if (
                     !temperCOBJsCache.TryGetValue(createdItemFormKey, out var temperCOBJs)
                 )
@@ -399,16 +405,16 @@ namespace Hephaestus_reimagined
                         );
                     }
 
-                    // Add mastery perk condition
+                    // Add tempering gate perk condition
                     var perkCondData = new HasPerkConditionData()
                     {
                         RunOnType = Condition.RunOnType.Subject,
                     };
                     perkCondData.Perk = new FormLinkOrIndex<IPerkGetter>(
                         perkCondData,
-                        masteryPerk.FormKey
+                        temperingGatePerk.FormKey
                     );
-                    perkCondData.Perk.Link.SetTo(masteryPerk.FormKey);
+                    perkCondData.Perk.Link.SetTo(temperingGatePerk.FormKey);
 
                     modifiedTemperCOBJ.Conditions.Add(
                         new ConditionFloat()
