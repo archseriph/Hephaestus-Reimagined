@@ -6,9 +6,11 @@ Hephaestus Reimagined is a Synthesis patcher that strips away your innate knowle
 
 ## What it does
 
-- Removes default crafting and tempering knowledge from items
-- Adds schematics and recipe notes to leveled lists so you can actually find them in the world
-- Supports crafting, tempering, and food recipes
+- Removes default crafting and tempering knowledge from all items
+- Schematics for weapons, armor, and jewelry are found in loot or unlocked by breaking items down at a **smelter**
+- Food recipes are unlocked by recreating the dish at a **cooking pot**
+- Crafting knowledge must come first — you can't master tempering an item you don't know how to make
+- Unique items and artifacts skip the crafting gate and unlock tempering through bench study alone
 - Works across SkyrimLE, SkyrimSE, SkyrimVR, Enderal, and the GOG edition
 
 The first time you stumble across a Dwarven Sword Schematic tucked in a chest you weren't even looking in — that's the moment. That's what this is for.
@@ -25,7 +27,7 @@ The first time you stumble across a Dwarven Sword Schematic tucked in a chest yo
 2. Open Synthesis and import the included `.synth` file — it'll pull the patcher straight from GitHub
 3. Run Synthesis as normal
 
-After it finishes, open the generated patch in SSEEdit, find `HEP_MasteryQuest`, and check the **Start Game Enabled** flag so the quest kicks off automatically.
+After it finishes, open the generated patch in SSEEdit, find `HEP_MasteryQuest`, and in the **DNAM** section check the **Start Game Enabled** flag so the quest kicks off automatically.
 
 That's it. No fussing around.
 
