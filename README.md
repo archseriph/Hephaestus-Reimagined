@@ -39,4 +39,8 @@ If something looks wrong, check your load order first. It's always the load orde
 
 ## Smithing perks
 
-This mod replaces vanilla smithing perk gates entirely — schematics are the only thing standing between you and a recipe. That means the smithing perk tree does nothing for crafting out of the box. If you want those perk points to actually matter, pair this with a smithing overhaul that redirects smithing perks into bonuses like faster tempering progression, better output quality, or reduced material costs. There are several good ones on Nexus.
+This mod replaces vanilla smithing perk gates entirely — schematics are the only thing standing between you and a recipe. That means the smithing perk tree does nothing for crafting out of the box. If you want those perk points to actually matter, pair this with a smithing overhaul that redirects smithing perks into bonuses like faster tempering progression, better output quality, or reduced material costs.
+
+**Recommended pairing: [Forgemaster - Comprehensive Smithing Overhaul](https://www.nexusmods.com/skyrimspecialedition/mods/114767)**
+
+Forgemaster redesigns the perk tree around tempering progression and resource mastery, and introduces its own tome-based knowledge system. The two mods complement each other well — Forgemaster's tempering perks and Hephaestus' mastery system stack, so players need both to fully unlock tempering. Just know that Hephaestus' schematic system will override Forgemaster's crafting perk gates (schematics take priority). Run Synthesis after Forgemaster for the cleanest result.
