@@ -289,7 +289,11 @@ namespace Hephaestus_reimagined
                     // Breakdown COBJ: 1× base item at smelter → 1× schematic
                     var breakdownCOBJ = state.PatchMod.ConstructibleObjects.AddNew();
                     breakdownCOBJ.EditorID = $"HEP_Breakdown_{objEditorID}";
-                    breakdownCOBJ.WorkbenchKeyword.SetTo(Skyrim.Keyword.CraftingSmelter);
+                    breakdownCOBJ.WorkbenchKeyword.SetTo(
+                        objType == "Cooking"
+                            ? Skyrim.Keyword.CraftingCookpot
+                            : Skyrim.Keyword.CraftingSmelter
+                    );
                     breakdownCOBJ.CreatedObject.SetTo(schematicBook);
                     breakdownCOBJ.CreatedObjectCount = 1;
                     breakdownCOBJ.Items ??= new();
