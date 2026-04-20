@@ -36,3 +36,7 @@ That's it. No fussing around.
 This is a Synthesis patcher, not a traditional ESP replacer. That means it reads your full load order and generates a patch on the fly — so it plays nicely with other mods that touch crafting recipes, as long as you run Synthesis after them.
 
 If something looks wrong, check your load order first. It's always the load order.
+
+## Smithing perks
+
+This mod replaces vanilla smithing perk gates entirely — schematics are the only thing standing between you and a recipe. That means the smithing perk tree does nothing for crafting out of the box. If you want those perk points to actually matter, pair this with a smithing overhaul that redirects smithing perks into bonuses like faster tempering progression, better output quality, or reduced material costs. There are several good ones on Nexus.

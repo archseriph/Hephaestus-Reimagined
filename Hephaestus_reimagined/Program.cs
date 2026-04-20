@@ -314,6 +314,7 @@ namespace Hephaestus_reimagined
                             continue;
 
                         var modifiedCraftingCOBJ = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(craftingCobj);
+                        modifiedCraftingCOBJ.Conditions.Clear();
                         var craftingPerkCond = new HasPerkConditionData()
                         {
                             RunOnType = Condition.RunOnType.Subject,
