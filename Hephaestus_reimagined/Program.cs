@@ -193,9 +193,42 @@ namespace Hephaestus_reimagined
                         $"  Tier threshold: {threshold}{(isUnique ? " (unique ×2)" : string.Empty)}"
                     );
 
-                // Craftable items: schematic unlock gates both crafting and tempering.
-                // Uncraftable items (uniques/artifacts): bench-visit mastery gates tempering.
-                Perk temperingGatePerk;
+                // Mastery system: all items tracked for bench-visit tempering unlock
+                var masteryPerk = state.PatchMod.Perks.AddNew();
+                masteryPerk.EditorID = $"HEP_Mastered_{objEditorID}";
+                masteryPerk.Name = $"Mastered: {objName}";
+
+                var progressGlobal = new GlobalFloat(
+                    state.PatchMod.GetNextFormKey(),
+                    SkyrimRelease.SkyrimSE
+                );
+                progressGlobal.EditorID = $"HEP_Progress_{objEditorID}";
+                progressGlobal.Data = 0.0f;
+                state.PatchMod.Globals.Add(progressGlobal);
+
+                var thresholdGlobal = new GlobalFloat(
+                    state.PatchMod.GetNextFormKey(),
+                    SkyrimRelease.SkyrimSE
+                );
+                thresholdGlobal.EditorID = $"HEP_Threshold_{objEditorID}";
+                thresholdGlobal.Data = threshold;
+                state.PatchMod.Globals.Add(thresholdGlobal);
+
+                trackedItemsList.Items.Add(
+                    new FormLink<ISkyrimMajorRecordGetter>(createdItemFormKey)
+                );
+                masteryPerksList.Items.Add(
+                    new FormLink<ISkyrimMajorRecordGetter>(masteryPerk.FormKey)
+                );
+                progressGlobalsList.Items.Add(
+                    new FormLink<ISkyrimMajorRecordGetter>(progressGlobal.FormKey)
+                );
+                thresholdGlobalsList.Items.Add(
+                    new FormLink<ISkyrimMajorRecordGetter>(thresholdGlobal.FormKey)
+                );
+
+                // Crafting gate: craftable items also require schematic unlock before tempering
+                Perk? craftingUnlockPerk = null;
 
                 if (cobjFormKeys.Count > 0)
                 {
@@ -323,45 +356,7 @@ namespace Hephaestus_reimagined
                         }
                     }
 
-                    temperingGatePerk = craftingPerk;
-                }
-                else
-                {
-                    // Uncraftable item: bench-visit mastery system gates tempering
-                    var masteryPerk = state.PatchMod.Perks.AddNew();
-                    masteryPerk.EditorID = $"HEP_Mastered_{objEditorID}";
-                    masteryPerk.Name = $"Mastered: {objName}";
-
-                    var progressGlobal = new GlobalFloat(
-                        state.PatchMod.GetNextFormKey(),
-                        SkyrimRelease.SkyrimSE
-                    );
-                    progressGlobal.EditorID = $"HEP_Progress_{objEditorID}";
-                    progressGlobal.Data = 0.0f;
-                    state.PatchMod.Globals.Add(progressGlobal);
-
-                    var thresholdGlobal = new GlobalFloat(
-                        state.PatchMod.GetNextFormKey(),
-                        SkyrimRelease.SkyrimSE
-                    );
-                    thresholdGlobal.EditorID = $"HEP_Threshold_{objEditorID}";
-                    thresholdGlobal.Data = threshold;
-                    state.PatchMod.Globals.Add(thresholdGlobal);
-
-                    trackedItemsList.Items.Add(
-                        new FormLink<ISkyrimMajorRecordGetter>(createdItemFormKey)
-                    );
-                    masteryPerksList.Items.Add(
-                        new FormLink<ISkyrimMajorRecordGetter>(masteryPerk.FormKey)
-                    );
-                    progressGlobalsList.Items.Add(
-                        new FormLink<ISkyrimMajorRecordGetter>(progressGlobal.FormKey)
-                    );
-                    thresholdGlobalsList.Items.Add(
-                        new FormLink<ISkyrimMajorRecordGetter>(thresholdGlobal.FormKey)
-                    );
-
-                    temperingGatePerk = masteryPerk;
+                    craftingUnlockPerk = craftingPerk;
                 }
 
                 // Patch tempering COBJs to require the tempering gate perk
@@ -405,16 +400,35 @@ namespace Hephaestus_reimagined
                         );
                     }
 
-                    // Add tempering gate perk condition
+                    // Craftable items: also require crafting unlock before tempering
+                    if (craftingUnlockPerk != null)
+                    {
+                        var craftingGateCond = new HasPerkConditionData()
+                        {
+                            RunOnType = Condition.RunOnType.Subject,
+                        };
+                        craftingGateCond.Perk = new FormLinkOrIndex<IPerkGetter>(
+                            craftingGateCond, craftingUnlockPerk.FormKey
+                        );
+                        craftingGateCond.Perk.Link.SetTo(craftingUnlockPerk.FormKey);
+                        modifiedTemperCOBJ.Conditions.Add(new ConditionFloat()
+                        {
+                            ComparisonValue = 1,
+                            CompareOperator = CompareOperator.GreaterThanOrEqualTo,
+                            Data = craftingGateCond,
+                        });
+                    }
+
+                    // All items: require mastery perk to temper
                     var perkCondData = new HasPerkConditionData()
                     {
                         RunOnType = Condition.RunOnType.Subject,
                     };
                     perkCondData.Perk = new FormLinkOrIndex<IPerkGetter>(
                         perkCondData,
-                        temperingGatePerk.FormKey
+                        masteryPerk.FormKey
                     );
-                    perkCondData.Perk.Link.SetTo(temperingGatePerk.FormKey);
+                    perkCondData.Perk.Link.SetTo(masteryPerk.FormKey);
 
                     modifiedTemperCOBJ.Conditions.Add(
                         new ConditionFloat()
