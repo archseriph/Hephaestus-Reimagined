@@ -57,6 +57,14 @@ namespace Hephaestus_reimagined
                 new FormLink<IKeywordGetter>(Skyrim.Keyword.MagicDisallowEnchanting.FormKey)
             };
 
+        [SynthesisSettingName("Keep vanilla smithing perk requirements")]
+        [SynthesisDescription("If enabled, vanilla smithing perk requirements are kept alongside schematic conditions. Players need both the relevant smithing perk AND a schematic to craft.")]
+        public bool KeepVanillaCraftingConditions { get; set; } = false;
+
+        [SynthesisSettingName("Faction keywords (blocks crafting unless item is obtainable in the world)")]
+        [SynthesisDescription("Items carrying any of these keywords will be hidden from the crafting table unless they appear in leveled lists. Players must find or buy them from faction members to unlock the recipe via breakdown.")]
+        public List<IFormLinkGetter<IKeywordGetter>> FactionKeywords { get; set; } = new();
+
         [SynthesisSettingName("(Debug) Show patched item info")]
         public bool ShowDebugLogs { get; set; } = false;
     }

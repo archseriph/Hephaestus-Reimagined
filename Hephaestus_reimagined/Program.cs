@@ -140,6 +140,43 @@ namespace Hephaestus_reimagined
                 if (string.IsNullOrEmpty(objName) || string.IsNullOrEmpty(objEditorID))
                     continue;
 
+                // Faction keyword check: block crafting unless item appears in leveled lists
+                if (
+                    settings.FactionKeywords.Count > 0
+                    && createdItemKeywords.Keywords != null
+                    && settings.FactionKeywords.Any(fkw =>
+                        createdItemKeywords.Keywords.Any(kw => kw.FormKey == fkw.FormKey))
+                    && !lvliCache.ContainsKey(createdItemFormKey)
+                )
+                {
+                    // Item has a faction keyword and can't be found in the world — permanently
+                    // hide it from the crafting table by gating it behind a never-awarded perk
+                    foreach (var craftingCobjFormKey in cobjFormKeys)
+                    {
+                        if (!state.LinkCache.TryResolve<IConstructibleObjectGetter>(
+                            craftingCobjFormKey, out var craftingCobj))
+                            continue;
+                        var modifiedCraftingCOBJ = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(craftingCobj);
+                        if (!settings.KeepVanillaCraftingConditions)
+                            modifiedCraftingCOBJ.Conditions.Clear();
+                        var blockedPerk = state.PatchMod.Perks.AddNew();
+                        blockedPerk.EditorID = $"HEP_FactionBlocked_{objEditorID}";
+                        blockedPerk.Name = $"[Faction Locked] {objName}";
+                        var blockCond = new HasPerkConditionData() { RunOnType = Condition.RunOnType.Subject };
+                        blockCond.Perk = new FormLinkOrIndex<IPerkGetter>(blockCond, blockedPerk.FormKey);
+                        blockCond.Perk.Link.SetTo(blockedPerk.FormKey);
+                        modifiedCraftingCOBJ.Conditions.Add(new ConditionFloat()
+                        {
+                            ComparisonValue = 1,
+                            CompareOperator = CompareOperator.GreaterThanOrEqualTo,
+                            Data = blockCond,
+                        });
+                        if (settings.ShowDebugLogs)
+                            Console.WriteLine($"  Faction locked (not in loot): {objName}");
+                    }
+                    continue;
+                }
+
                 if (settings.ShowDebugLogs)
                 {
                     Console.WriteLine(string.Empty);
@@ -314,7 +351,8 @@ namespace Hephaestus_reimagined
                             continue;
 
                         var modifiedCraftingCOBJ = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(craftingCobj);
-                        modifiedCraftingCOBJ.Conditions.Clear();
+                        if (!settings.KeepVanillaCraftingConditions)
+                            modifiedCraftingCOBJ.Conditions.Clear();
                         var craftingPerkCond = new HasPerkConditionData()
                         {
                             RunOnType = Condition.RunOnType.Subject,
