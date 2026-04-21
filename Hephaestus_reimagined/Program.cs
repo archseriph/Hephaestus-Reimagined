@@ -140,17 +140,16 @@ namespace Hephaestus_reimagined
                 if (string.IsNullOrEmpty(objName) || string.IsNullOrEmpty(objEditorID))
                     continue;
 
-                // Faction keyword check: block crafting unless item appears in leveled lists
-                if (
+                // Faction keyword check
+                bool isFactionItem =
                     settings.FactionKeywords.Count > 0
                     && createdItemKeywords.Keywords != null
                     && settings.FactionKeywords.Any(fkw =>
-                        createdItemKeywords.Keywords.Any(kw => kw.FormKey == fkw.FormKey))
-                    && !lvliCache.ContainsKey(createdItemFormKey)
-                )
+                        createdItemKeywords.Keywords.Any(kw => kw.FormKey == fkw.FormKey));
+
+                if (isFactionItem && !lvliCache.ContainsKey(createdItemFormKey))
                 {
-                    // Item has a faction keyword and can't be found in the world — permanently
-                    // hide it from the crafting table by gating it behind a never-awarded perk
+                    // Not obtainable in the world — permanently hide from the crafting table
                     foreach (var craftingCobjFormKey in cobjFormKeys)
                     {
                         if (!state.LinkCache.TryResolve<IConstructibleObjectGetter>(
@@ -176,6 +175,8 @@ namespace Hephaestus_reimagined
                     }
                     continue;
                 }
+                // isFactionItem && in leveled lists: process normally but skip LVLI injection
+                // so the only path to the schematic is looting a faction member and breaking it down
 
                 if (settings.ShowDebugLogs)
                 {
@@ -372,8 +373,8 @@ namespace Hephaestus_reimagined
                             Console.WriteLine($"  Patched crafting COBJ: {craftingCobj.EditorID}");
                     }
 
-                    // LVLI injection: add schematic wherever the base item appears in leveled lists
-                    if (lvliCache.TryGetValue(createdItemFormKey, out var containingLvlis))
+                    // LVLI injection: skipped for faction items — breakdown is the only unlock path
+                    if (!isFactionItem && lvliCache.TryGetValue(createdItemFormKey, out var containingLvlis))
                     {
                         foreach (var lvli in containingLvlis)
                         {
