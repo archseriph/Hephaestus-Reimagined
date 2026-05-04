@@ -5,6 +5,12 @@ GlobalVariable Property HEP_CraftingThreshold Auto
 Perk Property HEP_CraftingUnlockedPerk Auto
 
 Event OnRead()
+    RegisterForMenu("Book Menu")
+EndEvent
+
+Event OnMenuClose(string menuName)
+    UnregisterForMenu("Book Menu")
+    string itemName = self.GetDisplayName()
     Actor player = Game.GetPlayer()
     player.RemoveItem(self.GetBaseObject(), 1, true)
 
@@ -14,8 +20,8 @@ Event OnRead()
 
     if progress >= threshold
         player.AddPerk(HEP_CraftingUnlockedPerk)
-        Debug.Notification("Recipe learned: " + self.GetDisplayName())
+        Debug.Notification("Recipe learned: " + itemName)
     else
-        Debug.Notification(self.GetDisplayName() + " (" + (progress as int) + "/" + (threshold as int) + ")")
+        Debug.Notification(itemName + " (" + (progress as int) + "/" + (threshold as int) + ")")
     endIf
 EndEvent

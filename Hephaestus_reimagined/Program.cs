@@ -28,6 +28,11 @@ namespace Hephaestus_reimagined
             Console.WriteLine("=================================================");
             Console.WriteLine("Building caches...");
 
+            // Resolve a template book for model/sounds — avoids CTD when rendering in inventory
+            var schematicBookTemplate = state.LoadOrder.PriorityOrder.Book()
+                .WinningOverrides()
+                .FirstOrDefault(b => b.Model != null);
+
             // Pre-build tempering COBJ cache: item FormKey → temper COBJs
             var temperCOBJsCache = new Dictionary<FormKey, List<IConstructibleObjectGetter>>();
             foreach (var cobj in state.LoadOrder.PriorityOrder.ConstructibleObject().WinningOverrides())
@@ -302,6 +307,20 @@ namespace Hephaestus_reimagined
                     var schematicBook = state.PatchMod.Books.AddNew();
                     schematicBook.EditorID = $"HEP_Schematic_{objEditorID}";
                     schematicBook.Name = $"Schematic: {objName}";
+                    schematicBook.BookText = new Mutagen.Bethesda.Strings.TranslatedString(
+                        Mutagen.Bethesda.Strings.Language.English,
+                        $"Detailed schematics for crafting {objName}."
+                    );
+
+                    // Copy model/sounds from the first vanilla book that has a model so the
+                    // item renders in inventory without CTD.
+                    if (schematicBookTemplate != null)
+                    {
+                        schematicBook.Model = schematicBookTemplate.Model?.DeepCopy();
+                        schematicBook.InventoryArt.SetTo(schematicBookTemplate.InventoryArt);
+                        schematicBook.PickUpSound.SetTo(schematicBookTemplate.PickUpSound);
+                        schematicBook.PutDownSound.SetTo(schematicBookTemplate.PutDownSound);
+                    }
 
                     var bookAdapter = new VirtualMachineAdapter();
                     var schematicScript = new ScriptEntry();
@@ -309,16 +328,19 @@ namespace Hephaestus_reimagined
                     schematicScript.Properties.Add(new ScriptObjectProperty()
                     {
                         Name = "HEP_CraftingProgress",
+                        Flags = ScriptProperty.Flag.Edited,
                         Object = new FormLink<ISkyrimMajorRecordGetter>(craftingProgress.FormKey),
                     });
                     schematicScript.Properties.Add(new ScriptObjectProperty()
                     {
                         Name = "HEP_CraftingThreshold",
+                        Flags = ScriptProperty.Flag.Edited,
                         Object = new FormLink<ISkyrimMajorRecordGetter>(craftingThreshold.FormKey),
                     });
                     schematicScript.Properties.Add(new ScriptObjectProperty()
                     {
                         Name = "HEP_CraftingUnlockedPerk",
+                        Flags = ScriptProperty.Flag.Edited,
                         Object = new FormLink<ISkyrimMajorRecordGetter>(craftingPerk.FormKey),
                     });
                     bookAdapter.Scripts.Add(schematicScript);
@@ -495,8 +517,7 @@ namespace Hephaestus_reimagined
             var quest = state.PatchMod.Quests.AddNew();
             quest.EditorID = "HEP_MasteryQuest";
             quest.Name = "Hephaestus Mastery Tracker";
-            // NOTE: quest.StartGameEnabled cannot be set via Mutagen 0.41 public API.
-            // Open the output ESP in SSEEdit and check "Start Game Enabled" on HEP_MasteryQuest manually.
+            quest.Flags = Quest.Flag.StartGameEnabled;
             quest.Priority = 0;
 
             // Build the quest-level script entry with FormList + player properties
@@ -542,18 +563,15 @@ namespace Hephaestus_reimagined
             questAdapter.Scripts.Add(questScriptEntry);
             quest.VirtualMachineAdapter = questAdapter;
 
+            // Mutagen cannot write compressed records; clear the flag on everything before export.
+            // Workaround: https://github.com/Mutagen-Modding/Mutagen/issues/235
+            foreach (var rec in state.PatchMod.EnumerateMajorRecords())
+                rec.IsCompressed = false;
+
             Console.WriteLine(string.Empty);
             Console.WriteLine("=================================================");
             Console.WriteLine(
                 $"Done. Created mastery records for {itemCOBJs.Count} items."
-            );
-            Console.WriteLine(string.Empty);
-            Console.WriteLine("POST-PATCHER STEPS REQUIRED:");
-            Console.WriteLine(
-                "  1. Open Hephaestus.esp in SSEEdit, find HEP_MasteryQuest,"
-            );
-            Console.WriteLine(
-                "     and check the 'Start Game Enabled' flag so the quest auto-starts."
             );
             Console.WriteLine("=================================================");
         }

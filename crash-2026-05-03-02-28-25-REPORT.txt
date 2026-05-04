@@ -1,0 +1,198 @@
+CLA SSE - Sephs Skyrim Experimental Crash Log Analyzer (1.2.0) / 2023.09.10
+---------------------------------------------------------------------------
+If you are asking others for assistance / help, ALWAYS provide the crashlog as well!
+#####################################################################################
+
+Crashlog Tool: 		CrashLoggerSSE v1-15-0-0 Oct 12 2024 11:33:37
+Game Version:   	1.6.1170
+Script Extender:	1.6.1170
+
+
+################################################################################
+RAM
+################################################################################
+RAM Total:	15.89 GB
+RAM Used:	13.17 GB
+RAM Free:	2.72 GB
+
+Analysis RAM (all good):
+		It is absolute unlikely that the crash was due to RAM.
+
+
+
+################################################################################
+Mod Count:
+################################################################################
+	Light: 151	Regular: 151	Total: 302
+
+
+################################################################################
+Header indicators:
+################################################################################
+Memory:  		0x7FF60C027F08		count: (2)
+File:    		SkyrimSE.exe		count: (45)
+Address: 		0D17F08			count: (2)
+Assembler:		mov rax, [rdi]	count: (2)
+
+[0] 0x7FF60C027F08 SkyrimSE.exe+0D17F08 -> 70187+0x78	mov rax, [rdi] -//- count: (1)
+[1] 0x7FF60BC0265A SkyrimSE.exe+08F265A -> 51058+0x7A	mov rcx, [rdi+0x70] -//- count: (1)
+[2] 0x7FF60BC006A0 SkyrimSE.exe+08F06A0 -> 51049+0x80	mov rax, [rbx+0x70] -//- count: (1)
+[3] 0x7FF60C2B465D SkyrimSE.exe+0FA465D -> 82082+0x6BD	cmp eax, 0x01 -//- count: (1)
+[4] 0x7FF60B95692F SkyrimSE.exe+064692F -> 36564+0xA8F	call 0x00007FF60BC04270 -//- count: (1)
+[6] 0x7FF60B94EAD5 SkyrimSE.exe+063EAD5 -> 36544+0x165	test bl, bl -//- count: (1)
+[7] 0x7FF60C84BB8E SkyrimSE.exe+153BB8E -> 109636+0x106	mov ebx, eax -//- count: (1)
+RDX 0x7FF60C8C7D20     (void* -> SkyrimSE.exe+15B7D20	jmp rax) -//- count: (1)
+R9  0x7FF60C015850     (void* -> SkyrimSE.exe+0D05850	ret 0x00) -//- count: (1)
+R10 0x7FF60E581D20     (void* -> SkyrimSE.exe+3271D20	sbb [0x00007FF68E4E2B7E], bl) -//- count: (1)
+R13 0x7FF60E46CFC0     (void* -> SkyrimSE.exe+315CFC0	add [rdx+0x299BD40], bh) -//- count: (1)
+R14 0x7FF60E46CEB0     (void* -> SkyrimSE.exe+315CEB0	add [rax], al) -//- count: (1)
+[RSP+38 ] 0x7FF60D2E6518     (void* -> SkyrimSE.exe+1FD6518	fisubr [rbp-0x52211042]) -//- count: (1)
+[RSP+68 ] 0x7FF60D2E6514     (void* -> SkyrimSE.exe+1FD6514	fisubr [rbp-0x52211042]) -//- count: (1)
+[RSP+B8 ] 0x7FF60BC0265A     (void* -> SkyrimSE.exe+08F265A	mov rcx, [rdi+0x70]) -//- count: (1)
+[RSP+100] 0x7FF60E5A1CF0     (void* -> SkyrimSE.exe+3291CF0	sub [rsi+0x29944D1], al) -//- count: (1)
+[RSP+118] 0x7FF60BC006A0     (void* -> SkyrimSE.exe+08F06A0	mov rax, [rbx+0x70]) -//- count: (1)
+[RSP+120] 0x7FF60E5A1910     (void* -> SkyrimSE.exe+3291910	add [rax], al) -//- count: (1)
+[RSP+130] 0x7FF60E5A1D10     (void* -> SkyrimSE.exe+3291D10	sbb [0x00007FF610F361E1], bh) -//- count: (1)
+[RSP+180] 0x7FF60E5A1D10     (void* -> SkyrimSE.exe+3291D10	sbb [0x00007FF610F361E1], bh) -//- count: (1)
+[RSP+188] 0x7FF60E4A11F0     (void* -> SkyrimSE.exe+31911F0	sbb [0x00007FF610E356C1], bh) -//- count: (1)
+[RSP+198] 0x7FF60B41AD39     (void* -> SkyrimSE.exe+010AD39	jmp 0x00007FF60B41AD57) -//- count: (1)
+[RSP+1B8] 0x7FF60B4BF260     (void* -> SkyrimSE.exe+01AF260	push rsi) -//- count: (1)
+[RSP+1C8] 0x7FF60E5A1910     (void* -> SkyrimSE.exe+3291910	add [rax], al) -//- count: (1)
+[RSP+1E0] 0x7FF60E46CFC0     (void* -> SkyrimSE.exe+315CFC0	add [rdx+0x299BD40], bh) -//- count: (1)
+[RSP+1F8] 0x7FF60BC300F8     (void* -> SkyrimSE.exe+09200F8	nop) -//- count: (1)
+[RSP+2A0] 0x7FF60E5A1CF0     (void* -> SkyrimSE.exe+3291CF0	sub [rsi+0x29944D1], al) -//- count: (1)
+[RSP+2A8] 0x7FF60E46CEB0     (void* -> SkyrimSE.exe+315CEB0	add [rax], al) -//- count: (1)
+[RSP+2C8] 0x7FF60C2B465D     (void* -> SkyrimSE.exe+0FA465D	cmp eax, 0x01) -//- count: (1)
+[RSP+308] 0x7FF60BC02BC0     (void* -> SkyrimSE.exe+08F2BC0	push rbx) -//- count: (1)
+[RSP+340] 0x7FF60E5A1C90     (void* -> SkyrimSE.exe+3291C90	cwde) -//- count: (1)
+[RSP+350] 0x7FF60E5A1CF0     (void* -> SkyrimSE.exe+3291CF0	sub [rsi+0x29944D1], al) -//- count: (1)
+[RSP+358] 0x7FF60E5A1CF0     (void* -> SkyrimSE.exe+3291CF0	sub [rsi+0x29944D1], al) -//- count: (1)
+[RSP+398] 0x7FF60C7B4E4F     (void* -> SkyrimSE.exe+14A4E4F	movzx ecx, al) -//- count: (1)
+[RSP+3B0] 0x7FF60E46D008     (void* -> SkyrimSE.exe+315D008	and [rsi], bl) -//- count: (1)
+[RSP+3C8] 0x7FF60BC02BC0     (void* -> SkyrimSE.exe+08F2BC0	push rbx) -//- count: (1)
+[RSP+3D8] 0x7FF60B6009F1     (void* -> SkyrimSE.exe+02F09F1	mov rcx, rax) -//- count: (1)
+[RSP+438] 0x7FF60E5A18B0     (void* -> SkyrimSE.exe+32918B0	and [rsi], bl) -//- count: (1)
+[RSP+4A8] 0x7FF60B95692F     (void* -> SkyrimSE.exe+064692F	call 0x00007FF60BC04270) -//- count: (1)
+[RSP+4B0] 0x7FF60E46CEB0     (void* -> SkyrimSE.exe+315CEB0	add [rax], al) -//- count: (1)
+[RSP+648] 0x7FF60B94EAD5     (void* -> SkyrimSE.exe+063EAD5	test bl, bl) -//- count: (1)
+[RSP+668] 0x7FF60E5B7330     (void* -> SkyrimSE.exe+32A7330	add [rax], al) -//- count: (1)
+[RSP+6D8] 0x7FF60C84BB8E     (void* -> SkyrimSE.exe+153BB8E	mov ebx, eax) -//- count: (1)
+SkyrimSE.exe                                     0x7FF60B310000 -//- count: (1)
+
+
+
+################################################################################
+Solutions
+################################################################################
+
+SkyrimSE.exe: count: (45)
+	This file on its own is not the cause, however, we'll do further parsing...
+
+	Could not find any known issues related to SkyrimSE.exe.
+	SkyrimSE.exe _might_ be listed for the sole reason of... you're playing this game!!
+--------------------------------------------------------------------------------
+
+NiNode: count: (1)
+	Ninodes are related to skeletons. It could be a wrong loadorder for skeleton based mods.
+	If you use HDT/SMP, make sure to load it like: Body (CBBE or BH/UNP) -> FNIS/Nemesis -> DAR -> HDT -> XP32
+	Also make sure that you've chosen the HDT/SMP variant of xpmsse.
+	If you find a mod name in the following list, try disabling it and rerun FNIS or Nemesis.
+--------------------------------------------------------------------------------
+RTTIName: "NiNode" count: (1)
+[RSP+478] 0x768              (size_t) [1896] count: (1)
+[RSP+488] 0x1                (size_t) [1] count: (1)
+Name: "WorldRoot Camera" count: (1)
+RTTIName: "NiCamera" count: (1)
+
+--------------------------------------------------------------------------------
+
+hdtSMP64.dll: count: (14)
+	If this appears often, it might indicate a bad config (rare).
+	However, it might also just indicate that there were NPCs around that were wearing hdt/SMP enabled clothing...
+	Please increase the log level for hdtsmp64 (if you have not done so yet) and check its content.
+
+	Make sure to have Faster HDT-SMP that suits your Skyrim Version:
+	- https://www.nexusmods.com/skyrimspecialedition/mods/57339 
+
+	Also make sure you have these installed:
+	- SMP NPC fix: https://www.nexusmods.com/skyrimspecialedition/mods/91616 
+
+	You are using FSMP version: 1.6.1170
+	Please ensure that this is compatible with your SKSE version: 1.6.1170
+
+	Possible FOMOD settings for installation
+	You might want to try different AVX options, because eventhough supported, they might cause shutter/'lag' in populated areas...
+	CPU:
+		avx:	True
+		avx2:	True
+		avx512:	False
+
+--------------------------------------------------------------------------------
+
+HUD: count: (11)
+	There seems to be an issue with your HUD / UI.
+	Nordic UI using the TDM patch might be the cause (at the very least in combination with Skyrim Souls).
+	If that is not what you are using, please figure out a fix and send me your crashlog and solution.
+
+[RSP+168] 0x299BC66B330      (HUDData*) -//- count: (1)
+[RSP+170] 0x299BC66B330      (HUDData*) -//- count: (1)
+[RSP+178] 0x7FFA315FC25D     (void* -> TrueHUD.dll+007C25D	add rsp, 0x68 |  D:\Code\ThirdParty\TrueHUD\src\Hooks.cpp:90 Hooks::HUDHook::AddMessage_SetHUDCartMode (mangled: ?AddMessage_SetHUDCartMode@HUDHook@Hooks@@CAXPEAVUIMessageQueue@RE@@AEBV?$BSFixedString@D@detail@4@W4UI_MESSAGE_TYPE@4@PEAVHUDData@4@@Z) D:\Code\ThirdParty\TrueHUD\src\Hooks.cpp:57 Hooks::HUDHook::AddMessage_SetHUDCartMode (mangled: ?AddMessage_SetHUDCartMode@HUDHook@Hooks@@CAXPEAVUIMessageQueue@RE@@AEBV?$BSFixedString@D@detail@4@W4UI_MESSAGE_TYPE@4@PEAVHUDData@4@@Z)) -//- count: (1)
+[RSP+1C0] 0x299BC66B330      (HUDData*) -//- count: (1)
+TrueHUD.dll                                      0x7FFA31580000 -//- count: (1)
+AHZmoreHUDInventory.dll                          0x7FFA855E0000 -//- count: (1)
+AHZmoreHUDInventory.dll v2.1.3 -//- count: (1)
+TrueHUD.dll v1.1.9 -//- count: (1)
+[2D]     SkyHUD.esp -//- count: (1)
+[FE: 8F] TrueHUD.esl -//- count: (1)
+[FE: 91] AHZmoreHUDInventory.esl -//- count: (1)
+
+--------------------------------------------------------------------------------
+
+DynDOLOD.esm: count: (1)
+	There is a chance that this might cause a CTD when changing locations.
+	Specificly when passing a door of some sorts, can cause the game its AUTO-SAVE to be triggered, because the scripts were not done when its called and thus make the game stall.
+	To avoid that, it is recomended to DISABLE Autosave in game settings.
+
+	If that does not help, please report to either:
+	https://www.nexusmods.com/skyrimspecialedition/mods/32382 
+<OR>
+	https://stepmodifications.org/forum/forum/223-dyndolod-xlodgen/ for a more detailed investigation.
+
+################################################################################
+Success Statistic: (this has been detected/handled, does not mean it's the cause)
+################################################################################
+Issues Found:	5
+Issues Solved:	5
+
+################################################################################
+DEBUG State:
+################################################################################
+Culprit list content: (just a list)
+SkyrimSE.exe, NiNode, hdtSMP64.dll, HUD, DynDOLOD.esm, 
+
+################################################################################
+Random 'Fallback' Checks
+################################################################################
+
+How to read these results?
+- They are simple keywords that may appear when you have a lot of issues.
+- They do NOT have to mean anything.
+- Only if the "regular" results / solutions do not help, they might provide an indication to the reason for this crash.
+
+
+Name: "WorldRoot Camera" -//- count: (2)
+RTTIName: "NiCamera" -//- count: (1)
+Name: "WorldRoot CameraNode" -//- count: (1)
+RTTIName: "NiNode" -//- count: (1)
+Name: "WorldRoot Node" -//- count: (1)
+RTTIName: "SceneGraph" -//- count: (1)
+
+
+[ 6]     ccBGSSSE001-Fish.esm -//- count: (1)
+[ C]     ccBGSSSE025-AdvDSGS.esm -//- count: (1)
+[FE: 16] ccBGSSSE037-Curios.esl -//- count: (1)
+
+
+[RSP+5A8] 0x7FFA4B9FC9F0     (hdt::ActorManager*) -//- count: (1)
+[RSP+5B8] 0x7FFA4B745874     (void* -> hdtSMP64.dll+0005874	mov rbx, [rsp+0x50] |  G:\source\hdtsmp-working\HDTSMP-Sandbox\Flex for 1.6.1170 - .8.00.17\hdtSMP64\ActorManager.cpp:291 hdt::ActorManager::onEvent (mangled: ?onEvent@ActorManager@hdt@@UEAAXAEBUFrameEvent@2@@Z)) -//- count: (1)
+
