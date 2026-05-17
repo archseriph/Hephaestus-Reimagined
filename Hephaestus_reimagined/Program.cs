@@ -52,6 +52,33 @@ namespace Hephaestus_reimagined
                 list.Add(cobj);
             }
 
+            // Build the set of every LVLI reachable from any OTFT (Outfit) record.
+            // These lists drive NPC equipment slots — injecting schematics into them replaces
+            // armor with a book, leaving the NPC partially naked.
+            var outfitLvliKeys = new HashSet<FormKey>();
+
+            void MarkOutfitLvli(FormKey key)
+            {
+                if (!outfitLvliKeys.Add(key)) return;
+                if (!state.LinkCache.TryResolve<ILeveledItemGetter>(key, out var nested)) return;
+                if (nested.Entries == null) return;
+                foreach (var e in nested.Entries)
+                {
+                    var child = e.Data?.Reference.FormKey ?? FormKey.Null;
+                    if (!child.IsNull)
+                        MarkOutfitLvli(child);
+                }
+            }
+
+            foreach (var outfit in state.LoadOrder.PriorityOrder.Outfit().WinningOverrides())
+            {
+                if (outfit.Items == null) continue;
+                foreach (var item in outfit.Items)
+                    MarkOutfitLvli(item.FormKey);
+            }
+
+            Console.WriteLine($"Outfit exclusion: marked {outfitLvliKeys.Count} equipment leveled lists as off-limits for schematic injection.");
+
             // Pre-build reverse LVLI cache: item FormKey → leveled lists that reference it
             var lvliCache = new Dictionary<FormKey, List<ILeveledItemGetter>>();
             foreach (var lvli in state.LoadOrder.PriorityOrder.LeveledItem().WinningOverrides())
@@ -400,6 +427,9 @@ namespace Hephaestus_reimagined
                     {
                         foreach (var lvli in containingLvlis)
                         {
+                            // Skip outfit-linked lists — these are NPC equipment slots, not loot.
+                            // Injecting here replaces armor with a book and leaves NPCs naked.
+                            if (outfitLvliKeys.Contains(lvli.FormKey)) continue;
                             if (lvli.Entries == null) continue;
                             var newEntries = new List<LeveledItemEntry>();
                             foreach (var entry in lvli.Entries)
