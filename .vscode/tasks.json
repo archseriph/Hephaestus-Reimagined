@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Hephaestus/Hephaestus.csproj",
+                "${workspaceFolder}/Hephaestus_reimagined/Hephaestus_reimagined.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/Hephaestus/Hephaestus.csproj",
+                "${workspaceFolder}/Hephaestus_reimagined/Hephaestus_reimagined.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/Hephaestus/Hephaestus.csproj"
+                "${workspaceFolder}/Hephaestus_reimagined/Hephaestus_reimagined.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
