@@ -22,6 +22,12 @@ namespace Hephaestus_reimagined
                 .Run(args);
         }
 
+        private static bool IsBlacklisted(IItemGetter item)
+        {
+            return settings.itemBlacklist.Contains(item)
+                || settings.PluginBlacklist.Contains(item.FormKey.ModKey);
+        }
+
         private static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
             Console.WriteLine(string.Empty);
@@ -111,7 +117,7 @@ namespace Hephaestus_reimagined
                 )
                     continue;
 
-                if (settings.itemBlacklist.Contains(createdItem))
+                if (IsBlacklisted(createdItem))
                     continue;
 
                 // Only track items that can be tempered
@@ -134,7 +140,7 @@ namespace Hephaestus_reimagined
                 if (!state.LinkCache.TryResolve<IItemGetter>(itemFormKey, out var uncraftableItem))
                     continue;
 
-                if (settings.itemBlacklist.Contains(uncraftableItem))
+                if (IsBlacklisted(uncraftableItem))
                     continue;
 
                 itemCOBJs[itemFormKey] = new List<FormKey>();

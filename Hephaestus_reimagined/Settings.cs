@@ -43,6 +43,10 @@ namespace Hephaestus_reimagined
         [SynthesisDescription("Items listed here will be completely ignored by the patcher.")]
         public List<IFormLinkGetter<IItemGetter>> itemBlacklist { get; set; } = new();
 
+        [SynthesisSettingName("Blacklist plugins")]
+        [SynthesisDescription("Every item originating from any of these plugins will be completely ignored by the patcher, without needing to list items individually.")]
+        public List<ModKey> PluginBlacklist { get; set; } = new();
+
         [SynthesisSettingName("Unique/artifact items (doubled mastery threshold)")]
         [SynthesisDescription("Items listed here require twice as many bench visits to master tempering.")]
         [SynthesisTooltip("Items listed here require twice as many bench visits to master tempering.")]
