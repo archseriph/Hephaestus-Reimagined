@@ -424,6 +424,31 @@ namespace Hephaestus_reimagined
                             Data = craftingPerkCond,
                         });
 
+                        if (
+                            !settings.DragonMaterialGate.Global.IsNull
+                            && GenData.IsDragonMaterial(createdItemKeywords)
+                        )
+                        {
+                            var dragonGateCond = new GetGlobalValueConditionData()
+                            {
+                                RunOnType = Condition.RunOnType.Subject,
+                                RunOnTypeIndex = -1,
+                            };
+                            dragonGateCond.Global = new FormLinkOrIndex<IGlobalGetter>(
+                                dragonGateCond, settings.DragonMaterialGate.Global.FormKey
+                            );
+                            dragonGateCond.Global.Link.SetTo(settings.DragonMaterialGate.Global.FormKey);
+                            modifiedCraftingCOBJ.Conditions.Add(new ConditionFloat()
+                            {
+                                ComparisonValue = settings.DragonMaterialGate.RequiredValue,
+                                CompareOperator = CompareOperator.EqualTo,
+                                Data = dragonGateCond,
+                            });
+
+                            if (settings.ShowDebugLogs)
+                                Console.WriteLine($"  Added Dragon-material gate: {craftingCobj.EditorID}");
+                        }
+
                         if (settings.ShowDebugLogs)
                             Console.WriteLine($"  Patched crafting COBJ: {craftingCobj.EditorID}");
                     }

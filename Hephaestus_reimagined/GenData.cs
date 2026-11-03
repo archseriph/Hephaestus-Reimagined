@@ -72,6 +72,19 @@ namespace Hephaestus_reimagined
             return threshold;
         }
 
+        // True for Dragonplate/Dragonscale armor or Dragonbone weapons specifically —
+        // narrower than Tier 7, which also includes Daedric.
+        public static bool IsDragonMaterial(IKeywordedGetter keywords)
+        {
+            if (keywords.Keywords == null)
+                return false;
+
+            var kw = keywords.Keywords;
+            return kw.Contains(Skyrim.Keyword.ArmorMaterialDragonplate)
+                || kw.Contains(Skyrim.Keyword.ArmorMaterialDragonscale)
+                || kw.Contains(Dawnguard.Keyword.DLC1WeapMaterialDragonbone);
+        }
+
         private static uint GetMaterialTier(IKeywordedGetter keywords)
         {
             if (keywords.Keywords == null)

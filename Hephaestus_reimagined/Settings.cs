@@ -15,8 +15,23 @@ namespace Hephaestus_reimagined
         public string objBenchName { get; set; } = string.Empty;
     }
 
+    public class DragonMaterialGateSettings
+    {
+        [SynthesisSettingName("Global")]
+        public IFormLinkGetter<IGlobalGetter> Global { get; set; } =
+            FormLinkGetter<IGlobalGetter>.Null;
+
+        [SynthesisSettingName("Required value")]
+        public float RequiredValue { get; set; } = 0f;
+    }
+
     public class Settings
     {
+        [SynthesisSettingName("Dragon-material crafting gate (optional)")]
+        [SynthesisDescription("If Global is set, crafting COBJs for Dragonplate/Dragonscale/Dragonbone items also require that Global to equal Required Value, in addition to the schematic-unlock perk. Meant for cross-mod integration — e.g. a perk overhaul's own 'Masterwork' toggle global. Leave Global unset to disable.")]
+        public DragonMaterialGateSettings DragonMaterialGate { get; set; } = new();
+
+
         [SynthesisSettingName("Crafting furniture settings")]
         [SynthesisDescription("Determines which crafting stations are tracked for mastery study.")]
         public List<BaseSettings> BenchSettings { get; set; } =
