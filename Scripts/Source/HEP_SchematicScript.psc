@@ -33,4 +33,12 @@ Event OnMenuClose(string menuName)
     else
         Debug.Notification(itemName + " schematics: " + (progress as int) + "/" + (threshold as int))
     endIf
+
+    ; Tell the Hephaestus MCM this recipe changed, so it can update its cache without rescanning every recipe.
+    int handle = ModEvent.Create("HEP_SchematicRead")
+    if handle
+        ModEvent.PushForm(handle, self)
+        ModEvent.PushForm(handle, HEP_CraftingProgress)
+        ModEvent.Send(handle)
+    endIf
 EndEvent

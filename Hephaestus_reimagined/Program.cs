@@ -150,6 +150,11 @@ namespace Hephaestus_reimagined
             Console.WriteLine(string.Empty);
 
             // Create the 4 parallel FormLists
+            // Synthesis can hand this patch a fresh ID counter that starts at 0, and local ID 0 is the null form: the first
+            // record (HEP_TrackedItems) then binds as "nullptr form". Skip past the reserved low range before creating anything.
+            while (state.PatchMod.NextFormID < 0x800)
+                state.PatchMod.GetNextFormKey();
+
             var trackedItemsList = state.PatchMod.FormLists.AddNew();
             trackedItemsList.EditorID = "HEP_TrackedItems";
 
