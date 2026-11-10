@@ -159,6 +159,8 @@ namespace Hephaestus_reimagined
             var progressGlobalsList = state.PatchMod.FormLists.AddNew();
             progressGlobalsList.EditorID = "HEP_ProgressGlobals";
 
+            // 0x14 is the player REFERENCE (what an Actor property needs); Skyrim.Npc.Player (0x7) is the base NPC_ and fails to bind.
+            var PlayerRefKey = FormKey.Factory("000014:Skyrim.esm");
             var thresholdGlobalsList = state.PatchMod.FormLists.AddNew();
             thresholdGlobalsList.EditorID = "HEP_ThresholdGlobals";
 
@@ -662,7 +664,7 @@ namespace Hephaestus_reimagined
             McmProp("HEP_SchematicThreshold", schematicThresholdList.FormKey);
             McmProp("HEP_SchematicPerks", schematicPerksList.FormKey);
             McmProp("HEP_ShowOtherBreakdowns", showOtherBreakdowns.FormKey);
-            McmProp("PlayerRef", Skyrim.Npc.Player.FormKey);
+            McmProp("PlayerRef", PlayerRefKey);
             var mcmAdapter = new QuestAdapter();
             mcmAdapter.Scripts.Add(mcmScript);
             mcmQuest.VirtualMachineAdapter = mcmAdapter;
@@ -712,7 +714,7 @@ namespace Hephaestus_reimagined
                 new ScriptObjectProperty()
                 {
                     Name = "PlayerRef",
-                    Object = new FormLink<ISkyrimMajorRecordGetter>(Skyrim.Npc.Player.FormKey),
+                    Object = new FormLink<ISkyrimMajorRecordGetter>(PlayerRefKey),
                 }
             );
 
