@@ -162,6 +162,26 @@ namespace Hephaestus_reimagined
             var thresholdGlobalsList = state.PatchMod.FormLists.AddNew();
             thresholdGlobalsList.EditorID = "HEP_ThresholdGlobals";
 
+            // Schematic registry (parallel lists, one entry per craftable item that has a schematic).
+            // The MCM reads these; nothing else links a schematic book to its progress/threshold/perk.
+            var schematicItemsList = state.PatchMod.FormLists.AddNew();
+            schematicItemsList.EditorID = "HEP_SchematicItems";
+            var schematicBooksList = state.PatchMod.FormLists.AddNew();
+            schematicBooksList.EditorID = "HEP_SchematicBooks";
+            var schematicProgressList = state.PatchMod.FormLists.AddNew();
+            schematicProgressList.EditorID = "HEP_SchematicProgress";
+            var schematicThresholdList = state.PatchMod.FormLists.AddNew();
+            schematicThresholdList.EditorID = "HEP_SchematicThreshold";
+            var schematicPerksList = state.PatchMod.FormLists.AddNew();
+            schematicPerksList.EditorID = "HEP_SchematicPerks";
+
+            // 0 = other mods' smelter breakdown recipes are hidden where a schematic breakdown exists; the MCM flips it.
+            var showOtherBreakdowns = new GlobalFloat(state.PatchMod.GetNextFormKey(), SkyrimRelease.SkyrimSE);
+            showOtherBreakdowns.EditorID = "HEP_ShowOtherBreakdowns";
+            showOtherBreakdowns.Data = 0.0f;
+            state.PatchMod.Globals.Add(showOtherBreakdowns);
+            var breakdownInputs = new HashSet<FormKey>();
+
             // Process each item
             foreach (var (createdItemFormKey, cobjFormKeys) in itemCOBJs)
             {
@@ -339,10 +359,10 @@ namespace Hephaestus_reimagined
                     // Create schematic book with script properties
                     var schematicBook = state.PatchMod.Books.AddNew();
                     schematicBook.EditorID = $"HEP_Schematic_{objEditorID}";
-                    schematicBook.Name = $"Schematic: {objName}";
+                    schematicBook.Name = $"Schematic: {objName} [needs {complexity}]";
                     schematicBook.BookText = new Mutagen.Bethesda.Strings.TranslatedString(
                         Mutagen.Bethesda.Strings.Language.English,
-                        $"Detailed schematics for crafting {objName}."
+                        $"Detailed schematics for crafting {objName}.\n\nYou need {complexity} schematics of this kind before you can craft it. Reading this one adds it to your progress."
                     );
 
                     // Copy model/sounds from the first vanilla book that has a model so the
@@ -376,6 +396,12 @@ namespace Hephaestus_reimagined
                         Flags = ScriptProperty.Flag.Edited,
                         Object = new FormLink<ISkyrimMajorRecordGetter>(craftingPerk.FormKey),
                     });
+                    schematicScript.Properties.Add(new ScriptStringProperty()
+                    {
+                        Name = "HEP_RecipeName",
+                        Flags = ScriptProperty.Flag.Edited,
+                        Data = objName,
+                    });
                     bookAdapter.Scripts.Add(schematicScript);
                     schematicBook.VirtualMachineAdapter = bookAdapter;
 
@@ -398,6 +424,14 @@ namespace Hephaestus_reimagined
                             Count = 1,
                         }
                     });
+
+                    schematicItemsList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(createdItemFormKey));
+                    schematicBooksList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(schematicBook.FormKey));
+                    schematicProgressList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(craftingProgress.FormKey));
+                    schematicThresholdList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(craftingThreshold.FormKey));
+                    schematicPerksList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(craftingPerk.FormKey));
+                    if (objType != "Cooking")
+                        breakdownInputs.Add(createdItemFormKey);
 
                     // Patch crafting COBJs to require the unlock perk
                     foreach (var craftingCobjFormKey in cobjFormKeys)
@@ -570,6 +604,68 @@ namespace Hephaestus_reimagined
                         Console.WriteLine($"  Patched tempering COBJ: {temperCOBJ.EditorID}");
                 }
             }
+
+            // Hide other mods' smelter breakdowns of items that now break down into a schematic.
+            // The condition goes FIRST so an OR chain in the original conditions cannot swallow it.
+            if (settings.HideOtherBreakdowns && breakdownInputs.Count > 0)
+            {
+                int hidden = 0;
+                foreach (var cobj in state.LoadOrder.PriorityOrder.ConstructibleObject().WinningOverrides())
+                {
+                    if (cobj.WorkbenchKeyword.FormKey != Skyrim.Keyword.CraftingSmelter.FormKey) continue;
+                    if (cobj.EditorID != null && cobj.EditorID.StartsWith("HEP_", StringComparison.Ordinal)) continue;
+                    if (cobj.Items == null || cobj.Items.Count != 1) continue;
+                    var inputKey = cobj.Items[0].Item.Item.FormKey;
+                    if (!breakdownInputs.Contains(inputKey)) continue;
+                    if (cobj.CreatedObject.TryResolve(state.LinkCache, out var made) && made is IBookGetter) continue;
+
+                    var hiddenCobj = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(cobj);
+                    var showCond = new GetGlobalValueConditionData()
+                    {
+                        RunOnType = Condition.RunOnType.Subject,
+                        RunOnTypeIndex = -1,
+                    };
+                    showCond.Global = new FormLinkOrIndex<IGlobalGetter>(showCond, showOtherBreakdowns.FormKey);
+                    showCond.Global.Link.SetTo(showOtherBreakdowns.FormKey);
+                    hiddenCobj.Conditions.Insert(0, new ConditionFloat()
+                    {
+                        ComparisonValue = 1,
+                        CompareOperator = CompareOperator.EqualTo,
+                        Data = showCond,
+                    });
+                    hidden++;
+                    if (settings.ShowDebugLogs)
+                        Console.WriteLine($"  Hid breakdown recipe: {cobj.EditorID}");
+                }
+                Console.WriteLine($"Hid {hidden} other-mod smelter breakdown recipes (toggle in the Hephaestus MCM).");
+            }
+
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("Creating MCM quest...");
+            var mcmQuest = state.PatchMod.Quests.AddNew();
+            mcmQuest.EditorID = "HEP_MCMQuest";
+            mcmQuest.Name = "Hephaestus MCM";
+            mcmQuest.Flags = Quest.Flag.StartGameEnabled;
+            mcmQuest.Priority = 0;
+            var mcmScript = new ScriptEntry();
+            mcmScript.Name = "HEP_MCM";
+            void McmProp(string propName, FormKey key) =>
+                mcmScript.Properties.Add(new ScriptObjectProperty()
+                {
+                    Name = propName,
+                    Flags = ScriptProperty.Flag.Edited,
+                    Object = new FormLink<ISkyrimMajorRecordGetter>(key),
+                });
+            McmProp("HEP_SchematicItems", schematicItemsList.FormKey);
+            McmProp("HEP_SchematicBooks", schematicBooksList.FormKey);
+            McmProp("HEP_SchematicProgress", schematicProgressList.FormKey);
+            McmProp("HEP_SchematicThreshold", schematicThresholdList.FormKey);
+            McmProp("HEP_SchematicPerks", schematicPerksList.FormKey);
+            McmProp("HEP_ShowOtherBreakdowns", showOtherBreakdowns.FormKey);
+            McmProp("PlayerRef", Skyrim.Npc.Player.FormKey);
+            var mcmAdapter = new QuestAdapter();
+            mcmAdapter.Scripts.Add(mcmScript);
+            mcmQuest.VirtualMachineAdapter = mcmAdapter;
 
             Console.WriteLine(string.Empty);
             Console.WriteLine("Creating mastery quest and player alias...");

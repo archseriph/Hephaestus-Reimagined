@@ -84,6 +84,10 @@ namespace Hephaestus_reimagined
         [SynthesisDescription("Items carrying any of these keywords will be hidden from the crafting table unless they appear in leveled lists. Players must find or buy them from faction members to unlock the recipe via breakdown.")]
         public List<IFormLinkGetter<IKeywordGetter>> FactionKeywords { get; set; } = new();
 
+        [SynthesisSettingName("Hide other mods' breakdown recipes when a schematic breakdown exists")]
+        [SynthesisDescription("Smelter recipes from other mods (e.g. Paths of Empyrean) that break down an item Hephaestus already turns into a schematic are hidden, so the smelter shows one entry per item. The MCM has a toggle to show them again.")]
+        public bool HideOtherBreakdowns { get; set; } = true;
+
         [SynthesisSettingName("(Debug) Show patched item info")]
         public bool ShowDebugLogs { get; set; } = false;
     }
