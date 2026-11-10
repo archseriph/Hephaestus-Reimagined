@@ -80,6 +80,14 @@ namespace Hephaestus_reimagined
         [SynthesisDescription("If enabled, vanilla smithing perk requirements are kept alongside schematic conditions. Players need both the relevant smithing perk AND a schematic to craft.")]
         public bool KeepVanillaCraftingConditions { get; set; } = false;
 
+        [SynthesisSettingName("Keep Paths of Empyrean's Dragonblood Masterwork condition")]
+        [SynthesisDescription("Paths of Empyrean hides its normal recipes (about 2,300 of them) while the global IWP_GLO_SMITH_DragonbloodMasterworkActive is on, using the condition 'GetGlobalValue(that global) == 0'. Hephaestus replaces recipe conditions with its schematic perk, which drops that gate. Turn this on to carry the condition over onto every recipe Hephaestus patches. Ignored if 'Keep vanilla smithing perk requirements' is on, because that already keeps every original condition.")]
+        public bool KeepPoEDragonbloodGate { get; set; } = false;
+
+        [SynthesisSettingName("Other globals whose conditions are kept on patched recipes")]
+        [SynthesisDescription("Any GetGlobalValue condition on one of these globals is copied from the original recipe onto the recipe Hephaestus patches (same comparison and value). Use for other mods' toggle or availability globals that Hephaestus would otherwise drop. Leave empty to keep none.")]
+        public List<IFormLinkGetter<IGlobalGetter>> KeepGlobalConditions { get; set; } = new();
+
         [SynthesisSettingName("Faction keywords (blocks crafting unless item is obtainable in the world)")]
         [SynthesisDescription("Items carrying any of these keywords will be hidden from the crafting table unless they appear in leveled lists. Players must find or buy them from faction members to unlock the recipe via breakdown.")]
         public List<IFormLinkGetter<IKeywordGetter>> FactionKeywords { get; set; } = new();

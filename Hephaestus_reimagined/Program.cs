@@ -155,6 +155,11 @@ namespace Hephaestus_reimagined
             while (state.PatchMod.NextFormID < 0x800)
                 state.PatchMod.GetNextFormKey();
 
+            // Globals whose GetGlobalValue conditions survive the condition clear on crafting recipes.
+            var keepGlobals = new HashSet<FormKey>(settings.KeepGlobalConditions.Select(g => g.FormKey));
+            if (settings.KeepPoEDragonbloodGate)
+                keepGlobals.Add(FormKey.Factory("014C67:PathsOfEmpyrean.esp")); // IWP_GLO_SMITH_DragonbloodMasterworkActive
+
             var trackedItemsList = state.PatchMod.FormLists.AddNew();
             trackedItemsList.EditorID = "HEP_TrackedItems";
 
@@ -448,8 +453,17 @@ namespace Hephaestus_reimagined
                             continue;
 
                         var modifiedCraftingCOBJ = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(craftingCobj);
+                        var keptGlobalConds = new List<(float Value, CompareOperator Op, FormKey Global)>();
                         if (!settings.KeepVanillaCraftingConditions)
+                        {
+                            if (keepGlobals.Count > 0)
+                                foreach (var origCond in craftingCobj.Conditions)
+                                    if (origCond is IConditionFloatGetter origFloat
+                                        && origFloat.Data is IGetGlobalValueConditionDataGetter origGlobal
+                                        && keepGlobals.Contains(origGlobal.Global.Link.FormKey))
+                                        keptGlobalConds.Add((origFloat.ComparisonValue, origFloat.CompareOperator, origGlobal.Global.Link.FormKey));
                             modifiedCraftingCOBJ.Conditions.Clear();
+                        }
                         var craftingPerkCond = new HasPerkConditionData()
                         {
                             RunOnType = Condition.RunOnType.Subject,
@@ -464,6 +478,23 @@ namespace Hephaestus_reimagined
                             CompareOperator = CompareOperator.GreaterThanOrEqualTo,
                             Data = craftingPerkCond,
                         });
+
+                        foreach (var kept in keptGlobalConds)
+                        {
+                            var keptData = new GetGlobalValueConditionData()
+                            {
+                                RunOnType = Condition.RunOnType.Subject,
+                                RunOnTypeIndex = -1,
+                            };
+                            keptData.Global = new FormLinkOrIndex<IGlobalGetter>(keptData, kept.Global);
+                            keptData.Global.Link.SetTo(kept.Global);
+                            modifiedCraftingCOBJ.Conditions.Add(new ConditionFloat()
+                            {
+                                ComparisonValue = kept.Value,
+                                CompareOperator = kept.Op,
+                                Data = keptData,
+                            });
+                        }
 
                         if (
                             !settings.DragonMaterialGate.Global.IsNull
