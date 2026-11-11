@@ -36,6 +36,10 @@ int[] pow2
 int scanPos = 0
 bool scanDone = false
 
+; schematic read waiting for the Book Menu to close
+bool pendingRead = false
+string pendingName
+
 int oStatus
 int oCategory
 int oPage
@@ -191,7 +195,23 @@ Function ClassifyIndex(int i)
         SetBit(catBits0, i, (c % 2) == 1)
         SetBit(catBits1, i, ((c / 2) % 2) == 1)
         SetBit(catBits2, i, ((c / 4) % 2) == 1)
+        SyncReadFlag(HEP_SchematicBooks.GetAt(i), learned)
     endIf
+EndFunction
+
+; Optional (needs Dylbills Papyrus Functions): the inventory "read" eye on a schematic means "this pattern is learned,
+; any further copy is useless". Reading a book makes the engine mark it read, so after every read the flag is put
+; back to "not read" until the recipe is learned, then set to "read". The flag belongs to the book form, so it
+; shows on every copy. Does nothing when the Dylbills plugin is not loaded.
+Function SyncReadFlag(Form a_book, bool a_read)
+    Book b = a_book as Book
+    if !b
+        return
+    endIf
+    if SKSE.GetPluginVersion("DbSkseFunctions") < 0
+        return
+    endIf
+    DbSKSEFunctions.SetBookRead(b, a_read)
 EndFunction
 
 ; ---------------------------------------------------------------- background scan + live updates
@@ -204,6 +224,15 @@ Function StartScan()
 EndFunction
 
 Event OnUpdate()
+    ; a schematic was opened: finish it once the Book Menu is gone (this timer does not run while a menu is open)
+    bool again = false
+    if pendingRead
+        if UI.IsMenuOpen("Book Menu")
+            again = true
+        else
+            ProcessPendingSchematic()
+        endIf
+    endIf
     EnsureCache()
     int total = HEP_SchematicItems.GetSize()
     int stop = scanPos + 15
@@ -218,10 +247,97 @@ Event OnUpdate()
         RegisterForSingleUpdate(0.6)
     else
         scanDone = true
+        if again
+            RegisterForSingleUpdate(0.5)
+        endIf
     endIf
 EndEvent
 
-; Sent by HEP_SchematicScript after a schematic is read. a_progress is that recipe's progress global.
+; Called directly by HEP_SchematicScript when a schematic is opened (the Book Menu is still up). Remember which
+; recipe it was and wait for the menu to close before touching the inventory.
+Function SchematicOpened(string a_recipeName)
+    Debug.Trace("HEP: schematic opened: " + a_recipeName)
+    pendingRead = true
+    pendingName = a_recipeName
+    RegisterForMenu("Book Menu")
+    RegisterForSingleUpdate(0.5)
+EndFunction
+
+Event OnMenuClose(string a_menuName)
+    if a_menuName != "Book Menu"
+        return
+    endIf
+    UnregisterForMenu("Book Menu")
+    ProcessPendingSchematic()
+EndEvent
+
+; Counts the schematic that was opened. Reached from OnMenuClose or from OnUpdate, whichever sees the menu gone
+; first; the pending state is cleared up front so the second one finds nothing to do.
+Function ProcessPendingSchematic()
+    if !pendingRead
+        return
+    endIf
+    pendingRead = false
+    string recipeName = pendingName
+    pendingName = ""
+    EnsureCache()
+    ; The item script cannot tell us which book it is (its form properties are None on an inventory item), so find
+    ; the schematic in the player's inventory by name and look it up in the registry.
+    string prefix = "Schematic: " + recipeName + " ["
+    int i = -1
+    int n = PlayerRef.GetNumItems()
+    int k = 0
+    while k < n && i < 0
+        Form f = PlayerRef.GetNthForm(k)
+        if f && f.GetType() == 27
+            if StringUtil.Find(f.GetName(), prefix) == 0
+                i = HEP_SchematicBooks.Find(f)
+            endIf
+        endIf
+        k += 1
+    endWhile
+    Debug.Trace("HEP: processing schematic " + recipeName + ", registry index " + i)
+    if i < 0
+        return
+    endIf
+    Form schematicBook = HEP_SchematicBooks.GetAt(i)
+    GlobalVariable progressGlobal = HEP_SchematicProgress.GetAt(i) as GlobalVariable
+    GlobalVariable thresholdGlobal = HEP_SchematicThreshold.GetAt(i) as GlobalVariable
+    Perk craftingPerk = HEP_SchematicPerks.GetAt(i) as Perk
+    if recipeName == ""
+        recipeName = schematicBook.GetName()
+    endIf
+    PlayerRef.RemoveItem(schematicBook, 1, true)
+    if PlayerRef.HasPerk(craftingPerk)
+        Debug.Notification(recipeName + ": recipe already known")
+        DiscardSpares(schematicBook, recipeName)
+        return
+    endIf
+    float threshold = thresholdGlobal.GetValue()
+    float progress = progressGlobal.GetValue() + 1.0
+    progressGlobal.SetValue(progress)
+    if progress >= threshold
+        PlayerRef.AddPerk(craftingPerk)
+        Debug.Notification("Recipe learned: " + recipeName)
+        DiscardSpares(schematicBook, recipeName)
+    else
+        Debug.Notification(recipeName + " schematics: " + (progress as int) + "/" + (threshold as int))
+    endIf
+    Debug.Trace("HEP: schematic counted: " + recipeName + " " + (progress as int) + "/" + (threshold as int))
+    ClassifyIndex(i)
+EndFunction
+
+; A learned pattern makes every other copy of that schematic useless: remove them all from the player's inventory
+; (schematics are worth 0 gold, so nothing of value is lost).
+Function DiscardSpares(Form a_book, string a_recipeName)
+    int spare = PlayerRef.GetItemCount(a_book)
+    if spare > 0
+        PlayerRef.RemoveItem(a_book, spare, true)
+        Debug.Notification(spare + " spare " + a_recipeName + " schematic(s) discarded")
+    endIf
+EndFunction
+
+; Kept for compatibility: the old script sent "HEP_SchematicRead" after counting. a_progress is the progress global.
 Function OnSchematicRead(Form a_sender, Form a_progress)
     EnsureCache()
     int i = HEP_SchematicProgress.Find(a_progress)

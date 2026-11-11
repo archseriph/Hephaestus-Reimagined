@@ -192,7 +192,8 @@ namespace Hephaestus_reimagined
             showOtherBreakdowns.EditorID = "HEP_ShowOtherBreakdowns";
             showOtherBreakdowns.Data = 0.0f;
             state.PatchMod.Globals.Add(showOtherBreakdowns);
-            var breakdownInputs = new HashSet<FormKey>();
+            // item FormKey -> its crafting unlock perk (used to hide breakdowns once the pattern is learned)
+            var breakdownPerks = new Dictionary<FormKey, FormKey>();
 
             // Process each item
             foreach (var (createdItemFormKey, cobjFormKeys) in itemCOBJs)
@@ -231,6 +232,8 @@ namespace Hephaestus_reimagined
                         var blockedPerk = state.PatchMod.Perks.AddNew();
                         blockedPerk.EditorID = $"HEP_FactionBlocked_{objEditorID}";
                         blockedPerk.Name = $"[Faction Locked] {objName}";
+                        blockedPerk.NumRanks = 1; // Actor.AddPerk silently refuses a perk with 0 ranks that is not Playable
+                        blockedPerk.Playable = true;
                         var blockCond = new HasPerkConditionData() { RunOnType = Condition.RunOnType.Subject };
                         blockCond.Perk = new FormLinkOrIndex<IPerkGetter>(blockCond, blockedPerk.FormKey);
                         blockCond.Perk.Link.SetTo(blockedPerk.FormKey);
@@ -305,6 +308,8 @@ namespace Hephaestus_reimagined
                 var masteryPerk = state.PatchMod.Perks.AddNew();
                 masteryPerk.EditorID = $"HEP_Mastered_{objEditorID}";
                 masteryPerk.Name = $"Mastered: {objName}";
+                masteryPerk.NumRanks = 1; // Actor.AddPerk silently refuses a perk with 0 ranks that is not Playable
+                masteryPerk.Playable = true;
 
                 var progressGlobal = new GlobalFloat(
                     state.PatchMod.GetNextFormKey(),
@@ -349,6 +354,8 @@ namespace Hephaestus_reimagined
                     var craftingPerk = state.PatchMod.Perks.AddNew();
                     craftingPerk.EditorID = $"HEP_CraftingUnlocked_{objEditorID}";
                     craftingPerk.Name = $"Recipe: {objName}";
+                    craftingPerk.NumRanks = 1; // Actor.AddPerk silently refuses a perk with 0 ranks that is not Playable
+                    craftingPerk.Playable = true;
 
                     // Create crafting progress global (counts schematics studied)
                     var craftingProgress = new GlobalFloat(
@@ -427,6 +434,16 @@ namespace Hephaestus_reimagined
                     );
                     breakdownCOBJ.CreatedObject.SetTo(schematicBook);
                     breakdownCOBJ.CreatedObjectCount = 1;
+                    // once the pattern is learned another schematic is useless: the breakdown disappears from the bench
+                    var notLearnedCond = new HasPerkConditionData() { RunOnType = Condition.RunOnType.Subject };
+                    notLearnedCond.Perk = new FormLinkOrIndex<IPerkGetter>(notLearnedCond, craftingPerk.FormKey);
+                    notLearnedCond.Perk.Link.SetTo(craftingPerk.FormKey);
+                    breakdownCOBJ.Conditions.Add(new ConditionFloat()
+                    {
+                        ComparisonValue = 0,
+                        CompareOperator = CompareOperator.EqualTo,
+                        Data = notLearnedCond,
+                    });
                     breakdownCOBJ.Items ??= new();
                     breakdownCOBJ.Items.Add(new ContainerEntry()
                     {
@@ -443,7 +460,7 @@ namespace Hephaestus_reimagined
                     schematicThresholdList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(craftingThreshold.FormKey));
                     schematicPerksList.Items.Add(new FormLink<ISkyrimMajorRecordGetter>(craftingPerk.FormKey));
                     if (objType != "Cooking")
-                        breakdownInputs.Add(createdItemFormKey);
+                        breakdownPerks[createdItemFormKey] = craftingPerk.FormKey;
 
                     // Patch crafting COBJs to require the unlock perk
                     foreach (var craftingCobjFormKey in cobjFormKeys)
@@ -645,7 +662,7 @@ namespace Hephaestus_reimagined
 
             // Hide other mods' smelter breakdowns of items that now break down into a schematic.
             // The condition goes FIRST so an OR chain in the original conditions cannot swallow it.
-            if (settings.HideOtherBreakdowns && breakdownInputs.Count > 0)
+            if (settings.HideOtherBreakdowns && breakdownPerks.Count > 0)
             {
                 int hidden = 0;
                 foreach (var cobj in state.LoadOrder.PriorityOrder.ConstructibleObject().WinningOverrides())
@@ -654,7 +671,7 @@ namespace Hephaestus_reimagined
                     if (cobj.EditorID != null && cobj.EditorID.StartsWith("HEP_", StringComparison.Ordinal)) continue;
                     if (cobj.Items == null || cobj.Items.Count != 1) continue;
                     var inputKey = cobj.Items[0].Item.Item.FormKey;
-                    if (!breakdownInputs.Contains(inputKey)) continue;
+                    if (!breakdownPerks.TryGetValue(inputKey, out var unlockPerkKey)) continue;
                     if (cobj.CreatedObject.TryResolve(state.LinkCache, out var made) && made is IBookGetter) continue;
 
                     var hiddenCobj = state.PatchMod.ConstructibleObjects.GetOrAddAsOverride(cobj);
@@ -665,11 +682,23 @@ namespace Hephaestus_reimagined
                     };
                     showCond.Global = new FormLinkOrIndex<IGlobalGetter>(showCond, showOtherBreakdowns.FormKey);
                     showCond.Global.Link.SetTo(showOtherBreakdowns.FormKey);
+                    // shown when the MCM setting is on OR the schematic pattern is already learned (the schematic
+                    // breakdown disappears then, so this one must come back). OR binds tighter than AND.
                     hiddenCobj.Conditions.Insert(0, new ConditionFloat()
                     {
                         ComparisonValue = 1,
                         CompareOperator = CompareOperator.EqualTo,
+                        Flags = Condition.Flag.OR,
                         Data = showCond,
+                    });
+                    var learnedShowCond = new HasPerkConditionData() { RunOnType = Condition.RunOnType.Subject };
+                    learnedShowCond.Perk = new FormLinkOrIndex<IPerkGetter>(learnedShowCond, unlockPerkKey);
+                    learnedShowCond.Perk.Link.SetTo(unlockPerkKey);
+                    hiddenCobj.Conditions.Insert(1, new ConditionFloat()
+                    {
+                        ComparisonValue = 1,
+                        CompareOperator = CompareOperator.EqualTo,
+                        Data = learnedShowCond,
                     });
                     hidden++;
                     if (settings.ShowDebugLogs)
